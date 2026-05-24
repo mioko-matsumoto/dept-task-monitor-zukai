@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>各部署タスク進捗表 - 報告自動化ツール</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .num { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body class="bg-stone-50 text-slate-900">
+
+<div class="max-w-[1100px] mx-auto px-8 py-12">
+
+  <!-- Header -->
+  <header class="border-b border-slate-200 pb-6 mb-10">
+    <div class="text-xs text-slate-500 tracking-wide">AI-Driven School 第1期 / 第3回課題</div>
+    <h1 class="text-3xl font-bold mt-2 tracking-tight">各部署タスク進捗表</h1>
+    <p class="text-slate-600 mt-2">8部署のNotionタスク状況を一画面で把握し、本日納期タスクをDiscordへ自動投稿する報告ツール</p>
+    <div class="text-xs text-slate-400 mt-3">作成: 長谷川太一 / Levela株式会社</div>
+  </header>
+
+  <!-- Overview -->
+  <section class="mb-12">
+    <h2 class="text-sm font-bold text-slate-500 tracking-widest mb-3">CONCEPT</h2>
+    <div class="bg-white border border-slate-200 rounded-xl p-6">
+      <p class="leading-relaxed text-slate-700">
+        各部署の責任者と1on1して全社状況を把握する立場で、毎朝Notionの各部署ページを1つずつ開いて確認するのが面倒だった。
+        「○○部大丈夫？」と上司や他部署から聞かれた時に即答できない問題があり、
+        <strong>「8部署を1画面で見て」「本日納期のタスクを部署別に把握して」「ボタン一発でDiscordに共有できる」</strong>
+        ツールを作った。
+      </p>
+    </div>
+  </section>
+
+  <!-- Screenshot -->
+  <section class="mb-12">
+    <h2 class="text-sm font-bold text-slate-500 tracking-widest mb-3">SCREENSHOT</h2>
+    <figure class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <img src="screenshot.png" alt="ツール画面" class="w-full block" />
+      <figcaption class="px-5 py-3 text-xs text-slate-500 bg-slate-50 border-t border-slate-200">
+        左サイドバーに本日納期のタスクを部署別に表示（個人情報部分はモザイク済み） / メインエリアに各部署の「残タスク総数・期限切れ・未記入」を一覧 / 上部の信号機色で部署の健全性を即判断
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- 4 Parts -->
+  <section class="mb-12">
+    <h2 class="text-sm font-bold text-slate-500 tracking-widest mb-3">4つのパーツ</h2>
+    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-xs text-slate-500">
+          <tr>
+            <th class="text-left px-5 py-3 font-semibold w-[140px]">パーツ</th>
+            <th class="text-left px-5 py-3 font-semibold w-[200px]">採用したもの</th>
+            <th class="text-left px-5 py-3 font-semibold">選定理由</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr>
+            <td class="px-5 py-4 font-bold align-top">トリガー</td>
+            <td class="px-5 py-4 align-top">手動ボタン<br><span class="text-xs text-slate-500">（「更新」「Discord送信」）</span></td>
+            <td class="px-5 py-4 align-top text-slate-700">幹部から問い合わせを受けた瞬間に即時取得したいため、定期実行よりオンデマンドが業務にマッチ</td>
+          </tr>
+          <tr>
+            <td class="px-5 py-4 font-bold align-top">ソース元</td>
+            <td class="px-5 py-4 align-top">Notion<br><span class="text-xs text-slate-500">「部署タスク一覧」DB</span></td>
+            <td class="px-5 py-4 align-top text-slate-700">社内で既に運用されているデータベースをそのまま使用。1ソースに集約済みで部署プロパティで分類できる構造</td>
+          </tr>
+          <tr>
+            <td class="px-5 py-4 font-bold align-top">処理する場所</td>
+            <td class="px-5 py-4 align-top">Node.js + Express<br><span class="text-xs text-slate-500">ローカルサーバー</span></td>
+            <td class="px-5 py-4 align-top text-slate-700">外部デプロイ不要、トークンがローカル.envに留まる、デバッグが速い。非エンジニアの自分でも保守できる軽量構成</td>
+          </tr>
+          <tr>
+            <td class="px-5 py-4 font-bold align-top">届ける先</td>
+            <td class="px-5 py-4 align-top">Discord<br><span class="text-xs text-slate-500">Webhook</span></td>
+            <td class="px-5 py-4 align-top text-slate-700">社内コミュニケーションで日常使うチャンネルに直接届く。Webhook方式で実装が最も短く、署名等のセットアップ不要</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 工夫したポイント -->
+  <section class="mb-12">
+    <h2 class="text-sm font-bold text-slate-500 tracking-widest mb-3">工夫したポイント</h2>
+    <div class="grid grid-cols-2 gap-4">
+
+      <div class="bg-white border border-slate-200 rounded-xl p-5">
+        <div class="text-xs text-rose-600 font-bold mb-1">01. UI/UX</div>
+        <h3 class="font-bold mb-2">背景色だけで「ヤバさ」が伝わる</h3>
+        <p class="text-sm text-slate-700 leading-relaxed">
+          バッジや文字での「危険／要注意」表記はノイズと判断し、カード上部の3pxアクセントカラーだけで状態を伝える設計に。
+          「○○部大丈夫？」と聞かれた時に5秒で答えられることをゴールにした。
+        </p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-xl p-5">
+        <div class="text-xs text-rose-600 font-bold mb-1">02. 情報設計</div>
+        <h3 class="font-bold mb-2">TOPに個別タスク詳細を出さない</h3>
+        <p class="text-sm text-slate-700 leading-relaxed">
+          TOPは横断ステータスのみ、詳細は各部署のNotionページに任せる役割分担。
+          ただし「本日納期」は今日の行動に直結するため例外として左サイドバーに切り出した。
+        </p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-xl p-5">
+        <div class="text-xs text-rose-600 font-bold mb-1">03. AI活用</div>
+        <h3 class="font-bold mb-2">完成形HTMLを先に作る</h3>
+        <p class="text-sm text-slate-700 leading-relaxed">
+          API連携の実装前にモックHTMLでデザインを固めた。
+          その後サブエージェントでUI/UX観点とエンジニア観点の2軸レビューを実施し、
+          サブタスク二重カウント等のロジック不備も洗い出した。
+        </p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-xl p-5">
+        <div class="text-xs text-rose-600 font-bold mb-1">04. コードでブレを止める</h3>
+        <h3 class="font-bold mb-2">判定・日付計算はNodeで処理</h3>
+        <p class="text-sm text-slate-700 leading-relaxed">
+          期限切れ・未記入の判定や日付比較はAIに毎回問わせず、純粋なJavaScriptロジックで実装。
+          AIの揺らぎが入る余地をなくし、毎回同じ集計結果が出るようにした。
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- つまずきと解決 -->
+  <section class="mb-12">
+    <h2 class="text-sm font-bold text-slate-500 tracking-widest mb-3">つまずいた点 / 解決</h2>
+    <div class="bg-white border border-slate-200 rounded-xl p-6 space-y-5">
+
+      <div>
+        <h3 class="font-bold text-sm mb-1">📌 デザインの「ダサい問題」</h3>
+        <p class="text-sm text-slate-700 leading-relaxed">
+          最初のモックは小さくて見づらく、幹部に見せる品質ではなかった。
+          数字を大型化し、カードを2列に減らし、Stoneカラーで落ち着いた背景に変更。
+          AI感を残さないため、カタカナ専門語（フォーカス／ブリーフィング／トリアージ）は全廃した。
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-bold text-sm mb-1">📌 「未記入」の定義の解像度</h3>
+        <p class="text-sm text-slate-700 leading-relaxed">
+          最初は「期限・担当・ステータスのどれかが空」と広く定義したが、ノイズが多すぎた。
+          実運用に合わせて「期限が空 かつ ステータスが完了以外」に絞り、検知精度を上げた。
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-bold text-sm mb-1">📌 色判定の閾値調整</h3>
+        <p class="text-sm text-slate-700 leading-relaxed">
+          初期案では「期限切れ3件以上=危険」としていたが、運用感覚と合わなかった。
+          「期限切れ1件でも危険」「未記入1件以上で要注意」に変更し、即対応すべき部署を漏らさない閾値に再設計。
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Stack -->
+  <section class="mb-8">
+    <h2 class="text-sm font-bold text-slate-500 tracking-widest mb-3">技術スタック</h2>
+    <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-wrap gap-2 text-xs">
+      <span class="px-3 py-1.5 bg-slate-100 rounded-full">Node.js</span>
+      <span class="px-3 py-1.5 bg-slate-100 rounded-full">Express</span>
+      <span class="px-3 py-1.5 bg-slate-100 rounded-full">Notion API</span>
+      <span class="px-3 py-1.5 bg-slate-100 rounded-full">Discord Webhook</span>
+      <span class="px-3 py-1.5 bg-slate-100 rounded-full">Tailwind CSS</span>
+      <span class="px-3 py-1.5 bg-slate-100 rounded-full">Vanilla JS</span>
+    </div>
+  </section>
+
+  <footer class="text-center text-xs text-slate-400 mt-12 pt-6 border-t border-slate-200">
+    AI-Driven School 第1期 / 第3回課題 「面倒な報告を自動化するツールを作る」 / Levela株式会社
+  </footer>
+
+</div>
+
+</body>
+</html>
